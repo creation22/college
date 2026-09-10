@@ -1,77 +1,38 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
-import { animate, motion, useInView, useReducedMotion } from "motion/react";
 import { STATS } from "@/lib/data";
 
-function Counter({ value, suffix }: { value: number; suffix: string }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "0px 0px -10% 0px" });
-  const [display, setDisplay] = useState("0");
+function statDisplay(stat: (typeof STATS)[number]) {
+  if (stat.value === null) return "Multiple";
+  if (stat.value === 1999) return "1999";
+  return stat.value >= 1000
+    ? `${stat.value.toLocaleString("en-IN")}${stat.suffix}`
+    : `${stat.value}${stat.suffix}`;
+}
 
-  useEffect(() => {
-    if (!inView) return;
-    const controls = animate(0, value, {
-      duration: 1.4,
-      ease: [0.19, 1, 0.22, 1],
-      onUpdate: (v) =>
-        setDisplay(
-          value >= 1000 ? Math.round(v).toLocaleString("en-IN") : String(Math.round(v))
-        ),
-    });
-    return () => controls.stop();
-  }, [inView, value]);
-
-  return (
-    <span ref={ref} className="tabular">
-      {display}
-      <span className="text-fire">{suffix}</span>
-    </span>
-  );
+function statLabel(stat: (typeof STATS)[number]) {
+  return stat.value === null ? "Centers — across India" : `${stat.unit} — ${stat.note}`;
 }
 
 export default function Stats() {
-  const reduced = useReducedMotion();
-
   return (
-    <section className="relative border-y border-white/8 bg-coal" aria-label="PCFSM in numbers">
-      <div className="mx-auto max-w-[1600px]">
-        {STATS.map((stat, i) => (
-          <motion.div
-            key={stat.unit}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "0px 0px -10% 0px" }}
-            transition={{
-              duration: reduced ? 0 : 0.6,
-              ease: [0.19, 1, 0.22, 1],
-              delay: reduced ? 0 : i * 0.08,
-            }}
-            className={`flex flex-col gap-1 px-5 py-8 md:flex-row md:items-baseline md:justify-between md:px-10 md:py-10 ${
-              i > 0 ? "border-t border-white/8" : ""
-            }`}
-          >
-            <div className="display text-[11vw] leading-none text-bone md:text-[5.4vw]">
-              {stat.value !== null ? (
-                reduced ? (
-                  <span className="tabular">
-                    {stat.value.toLocaleString("en-IN")}
-                    <span className="text-fire">{stat.suffix}</span>
-                  </span>
-                ) : (
-                  <Counter value={stat.value} suffix={stat.suffix} />
-                )
-              ) : (
-                <span>
-                  MULTIPLE <span className="text-outline">CENTERS</span>
+    <section
+      className="marquee-hover-pause relative overflow-hidden border-y border-white/8 bg-night"
+      aria-label="PCFSM in numbers"
+    >
+      <div className="flex w-max animate-marquee items-center whitespace-nowrap will-change-transform">
+        {[0, 1].map((copy) => (
+          <div key={copy} className="flex items-center" aria-hidden={copy === 1}>
+            {STATS.map((stat) => (
+              <span key={`${copy}-${stat.unit}`} className="flex items-center gap-4 px-7 py-5 md:gap-5 md:px-10 md:py-6">
+                <span className="display text-3xl text-[#f2f0eb] tabular md:text-4xl">
+                  {statDisplay(stat)}
                 </span>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="text-[11px] uppercase tracking-[0.28em] text-fire">{stat.unit}</p>
-              <p className="mt-1 text-sm text-smoke">{stat.note}</p>
-            </div>
-          </motion.div>
+                <span className="text-[11px] uppercase tracking-[0.22em] text-mist">
+                  {statLabel(stat)}
+                </span>
+                <span className="ml-6 h-1.5 w-1.5 rounded-full bg-fire md:ml-10" aria-hidden />
+              </span>
+            ))}
+          </div>
         ))}
       </div>
     </section>
