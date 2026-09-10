@@ -63,14 +63,14 @@ export default function Facilities() {
 
       {/* editorial rows */}
       <div className="mx-auto mt-4 max-w-[1600px] px-5 md:px-10">
-        <div className="grid gap-px overflow-hidden bg-white/8 md:grid-cols-2 xl:grid-cols-3">
+        <div className="grid gap-px overflow-hidden bg-black/8 md:grid-cols-2 xl:grid-cols-3">
           {FACILITIES.slice(1).map((f, i) => (
-            <Reveal key={f.index} delay={(i % 3) * 0.08} className="h-full">
+            <Reveal key={f.index} y={i < 3 ? 24 : 0} delay={i < 3 ? i * 0.08 : 0.12 + i * 0.05} className="h-full">
               <div className="group h-full bg-coal p-7 transition-colors duration-500 hover:bg-panel md:p-9">
                 <div className="flex items-baseline justify-between">
                   <span className="text-sm tabular text-fire">{f.index}</span>
                   <span
-                    className="h-1.5 w-1.5 rounded-full bg-smoke/50 transition-all duration-400 group-hover:bg-fire group-hover:animate-pulse-dot"
+                    className="pulse-dot h-1.5 w-1.5 rounded-full bg-smoke/50 transition-colors duration-300 group-hover:bg-fire"
                     aria-hidden
                   />
                 </div>
