@@ -1,22 +1,29 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { SITE } from "@/lib/data";
-import { useIsMobile, useWebGL } from "@/lib/hooks";
 import { scrollToId } from "@/components/SmoothScroll";
 import Magnetic from "@/components/ui/Magnetic";
-
-const HeroScene = dynamic(() => import("@/three/HeroScene"), { ssr: false });
+import Embers from "@/components/ui/Embers";
+import WaterSpray from "@/components/ui/WaterSpray";
 
 const EASE = [0.19, 1, 0.22, 1] as const;
 
-function HeadlineLine({ text, delay }: { text: string; delay: number }) {
+function Line({
+  text,
+  delay,
+  className = "",
+}: {
+  text: string;
+  delay: number;
+  className?: string;
+}) {
   return (
-    <span className="block overflow-hidden pb-[0.06em] -mb-[0.06em]">
+    <span className="block overflow-hidden pb-[0.08em] -mb-[0.08em]">
       <motion.span
-        className="block will-change-transform"
+        className={`block will-change-transform ${className}`}
         initial={{ y: "108%" }}
         animate={{ y: "0%" }}
         transition={{ duration: 0.9, ease: EASE, delay }}
@@ -27,138 +34,216 @@ function HeadlineLine({ text, delay }: { text: string; delay: number }) {
   );
 }
 
+const CHIPS = ["Est. 1999", "MSBTE Affiliated", "Govt. of Maharashtra Recognized"];
+
 export default function Hero() {
   const sectionRef = useRef<HTMLElement>(null);
   const reduced = useReducedMotion();
-  const mobile = useIsMobile();
-  const webgl = useWebGL();
-  const [canvasActive, setCanvasActive] = useState(true);
+  const [inView, setInView] = useState(true);
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end start"],
   });
-  const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "24%"]);
+  const artY = useTransform(scrollYProgress, [0, 1], ["0%", "10%"]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
 
   useEffect(() => {
-    // warm the 3D chunk while WebGL detection is in flight
-    void import("@/three/HeroScene");
-  }, []);
-
-  useEffect(() => {
     if (!sectionRef.current) return;
-    const io = new IntersectionObserver(
-      ([entry]) => setCanvasActive(entry.isIntersecting),
-      { rootMargin: "80px" }
-    );
+    const io = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting), {
+      rootMargin: "60px",
+    });
     io.observe(sectionRef.current);
     return () => io.disconnect();
   }, []);
 
-  const still = !!reduced;
-  const sceneReady = webgl === true && !mobile ? true : webgl === true; // mobile gets simplified scene
-
   return (
     <section
       ref={sectionRef}
-      className="relative h-[100svh] min-h-[620px] overflow-hidden bg-ink noise"
+      className="relative min-h-[100svh] overflow-hidden bg-ink noise"
       aria-label="PCFSM — Master the science of safety"
     >
-      {/* 3D layer */}
-      {sceneReady && (
-        <div className="absolute inset-0" aria-hidden>
-          <HeroScene still={still} simple={mobile} active={canvasActive} />
-        </div>
-      )}
-
-      {/* non-WebGL / loading fallback — quiet industrial glow */}
-      {!sceneReady && (
-        <div className="absolute inset-0" aria-hidden>
-          <div className="absolute left-1/2 top-1/2 h-[70vmin] w-[70vmin] -translate-x-1/2 -translate-y-1/2 glow-fire rounded-full" />
-          <div className="absolute left-1/2 top-1/2 h-[46vmin] w-[46vmin] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/10" />
-          <div className="absolute left-1/2 top-1/2 h-[60vmin] w-[60vmin] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/6 rotate-45" style={{ borderStyle: "dashed" }} />
-        </div>
-      )}
-
-      {/* gradient masks for legibility + transition into next section */}
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/40 pointer-events-none" aria-hidden />
-      <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-transparent to-transparent pointer-events-none" aria-hidden />
-
-      {/* content */}
-      <motion.div
-        style={reduced ? undefined : { y: contentY, opacity: contentOpacity }}
-        className="relative z-10 mx-auto flex h-full max-w-[1600px] flex-col justify-end px-5 pb-14 md:px-10 md:pb-20"
-      >
-        <motion.p
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: EASE, delay: 0.5 }}
-          className="mb-5 text-[11px] md:text-xs uppercase tracking-[0.32em] text-ash"
-        >
-          {SITE.tagline}
-          <span className="mx-3 text-fire" aria-hidden>/</span>
-          <span className="text-smoke">Established {SITE.established}</span>
-        </motion.p>
-
-        <h1 className="display max-w-[13ch] text-[13.5vw] leading-[0.92] text-bone sm:text-[11vw] lg:text-[7.2vw]">
-          <HeadlineLine text="MASTER THE" delay={0.55} />
-          <span className="flex flex-col md:flex-row md:gap-[0.26em]">
-            <HeadlineLine text="SCIENCE" delay={0.68} />
-            <HeadlineLine text="OF SAFETY." delay={0.78} />
-          </span>
-        </h1>
-
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: EASE, delay: 1.0 }}
-          className="mt-8 flex flex-wrap items-center gap-4"
-        >
-          <Magnetic strength={0.22}>
-            <a
-              href="#programs"
-              onClick={(e) => {
-                e.preventDefault();
-                scrollToId("#programs");
-              }}
-              className="group inline-flex items-center gap-3 border border-white/15 px-7 py-4 text-[13px] font-semibold uppercase tracking-[0.16em] text-bone transition-colors duration-300 hover:border-fire hover:text-fire active:scale-[0.98]"
-            >
-              Explore Programs
-              <span className="inline-block transition-transform duration-300 ease-out-expo group-hover:translate-x-1" aria-hidden>→</span>
-            </a>
-          </Magnetic>
-          <Magnetic strength={0.22}>
-            <a
-              href={SITE.applyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex items-center gap-3 bg-fire px-7 py-4 text-[13px] font-semibold uppercase tracking-[0.16em] text-ink transition-colors duration-300 hover:bg-ember active:scale-[0.98]"
-            >
-              Apply Now
-              <span className="inline-block transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden>↗</span>
-            </a>
-          </Magnetic>
-        </motion.div>
-      </motion.div>
-
-      {/* scroll cue */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6, duration: 0.8 }}
-        className="absolute bottom-6 right-5 md:right-10 z-10 hidden md:flex flex-col items-center gap-3"
+      {/* faint structural glows */}
+      <div
+        className="pointer-events-none absolute -right-32 top-1/4 hidden h-[520px] w-[520px] rounded-full md:block"
+        style={{ background: "radial-gradient(closest-side, rgba(63,63,149,0.08), transparent 70%)" }}
         aria-hidden
-      >
-        <span className="text-[10px] uppercase tracking-[0.3em] text-smoke [writing-mode:vertical-rl]">Scroll</span>
-        <div className="h-14 w-px overflow-hidden bg-white/10">
+      />
+
+      <div className="relative z-10 mx-auto grid min-h-[100svh] w-full max-w-[1600px] items-center gap-12 px-5 pb-16 pt-24 md:px-10 lg:grid-cols-[1.12fr_1fr] lg:gap-8 lg:pt-16">
+        {/* ------------------------------ typography ------------------------------ */}
+        <motion.div style={reduced ? undefined : { opacity: contentOpacity }}>
+          <motion.ul
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 0.4 }}
+            className="mb-8 flex flex-wrap items-center gap-x-5 gap-y-2"
+          >
+            {CHIPS.map((chip, i) => (
+              <li key={chip} className="flex items-center gap-5 text-[11px] uppercase tracking-[0.24em] text-smoke">
+                {chip}
+                {i < CHIPS.length - 1 && (
+                  <span className="h-1 w-1 rounded-full bg-fire" aria-hidden />
+                )}
+              </li>
+            ))}
+          </motion.ul>
+
+          <h1 className="display text-[14vw] leading-[0.94] text-bone sm:text-[11.5vw] lg:text-[6.6vw]">
+            <Line text="MASTER THE" delay={0.5} />
+            <Line
+              text="Science"
+              delay={0.62}
+              className="serif-accent text-fire text-[1.14em] leading-[0.85]"
+            />
+            <Line text="OF SAFETY." delay={0.74} />
+          </h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: EASE, delay: 0.95 }}
+            className="mt-7 max-w-md text-base leading-relaxed text-ash md:text-lg"
+          >
+            Fire Engineering &amp; Industrial Safety education — diploma, post-graduate
+            and certificate programs, taught on real equipment, on real grounds.
+          </motion.p>
+
           <motion.div
-            className="h-1/2 w-full origin-top bg-fire"
-            animate={reduced ? undefined : { y: ["-100%", "200%"] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: EASE, delay: 1.1 }}
+            className="mt-10 flex flex-wrap items-center gap-4"
+          >
+            <Magnetic strength={0.22}>
+              <a
+                href={SITE.applyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-3 bg-fire px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.16em] text-ink transition-[background-color,transform] duration-200 ease-out hover:bg-ember active:scale-[0.98]"
+              >
+                Apply Now
+                <span className="inline-block transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden>↗</span>
+              </a>
+            </Magnetic>
+            <Magnetic strength={0.22}>
+              <a
+                href="#programs"
+                onClick={(e) => {
+                  e.preventDefault();
+                  scrollToId("#programs");
+                }}
+                className="group inline-flex items-center gap-3 border border-black/15 px-8 py-4 text-[13px] font-semibold uppercase tracking-[0.16em] text-bone transition-[color,border-color,transform] duration-200 ease-out hover:border-fire hover:text-fire active:scale-[0.98]"
+              >
+                Explore Programs
+                <span className="inline-block transition-transform duration-300 ease-out-expo group-hover:translate-x-1" aria-hidden>→</span>
+              </a>
+            </Magnetic>
+          </motion.div>
+        </motion.div>
+
+        {/* ------------------------------ the fireman ------------------------------ */}
+        <motion.div
+          style={reduced ? undefined : { y: artY }}
+          className="relative mx-auto w-full max-w-[560px] lg:max-w-none"
+        >
+          {/* glow bed */}
+          <div
+            className="pointer-events-none absolute inset-x-8 bottom-4 h-2/3"
+            style={{ background: "radial-gradient(closest-side, rgba(255,90,31,0.12), transparent 72%)" }}
+            aria-hidden
           />
-        </div>
-      </motion.div>
+
+          <motion.div
+            initial={reduced ? undefined : { opacity: 0, scale: 0.94, clipPath: "inset(14% 0 0 0)" }}
+            animate={{ opacity: 1, scale: 1, clipPath: "inset(0% 0 0 0)" }}
+            transition={{ duration: 1.1, ease: EASE, delay: 0.45 }}
+            className="relative hairline"
+          >
+            {reduced ? (
+              /* reduced motion — the still frame */
+              <Image
+                src="/images/hero/fireman.webp"
+                alt="Firefighter spraying water on a live training fire — PCFSM practical ground"
+                width={1124}
+                height={700}
+                priority
+                sizes="(max-width: 1024px) 90vw, 44vw"
+                className="h-auto w-full select-none"
+                draggable={false}
+              />
+            ) : (
+              /* the training film — muted, looping, silent */
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                poster="/images/hero/fireman.webp"
+                aria-hidden
+                className="h-auto w-full select-none"
+              >
+                <source src="/videos/hero.mp4" type="video/mp4" />
+              </video>
+            )}
+          </motion.div>
+
+          {/* water bursting out of the frame — desktop only */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.35, duration: 0.6 }}
+            className="absolute left-0 top-[58%] z-20 hidden h-[160px] w-[190px] -translate-x-[92%] -translate-y-1/2 lg:block"
+            aria-hidden
+          >
+            <WaterSpray className="inset-0" />
+          </motion.div>
+
+          {/* rising embers over the art */}
+          <Embers count={14} />
+
+          {/* verified stat chip */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 1.25 }}
+            className="glass absolute -bottom-3 left-0 flex items-center gap-3 px-5 py-3.5 md:left-2"
+          >
+            <span className="display text-2xl text-fire tabular">92%</span>
+            <span className="text-[10px] uppercase leading-tight tracking-[0.22em] text-ash">
+              Practical
+              <br />
+              Training
+            </span>
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* vertical tagline + scroll cue — unmounted once the hero leaves the viewport */}
+      {inView && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.6, duration: 0.8 }}
+          className="absolute bottom-6 right-5 z-10 hidden md:flex items-end gap-6"
+          aria-hidden
+        >
+          <span className="text-[10px] uppercase tracking-[0.34em] text-smoke [writing-mode:vertical-rl]">
+            Fire Engineering · Industrial Safety · HSE
+          </span>
+          <div className="flex flex-col items-center gap-3">
+            <span className="text-[10px] uppercase tracking-[0.3em] text-smoke [writing-mode:vertical-rl]">Scroll</span>
+            <div className="h-14 w-px overflow-hidden bg-black/10">
+              <motion.div
+                className="h-1/2 w-full origin-top bg-fire"
+                animate={reduced ? undefined : { y: ["-100%", "200%"] }}
+                transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </div>
+          </div>
+        </motion.div>
+      )}
     </section>
   );
 }
