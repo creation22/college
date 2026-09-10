@@ -2,7 +2,7 @@
 
 Premium, cinematic redesign of the official PCFSM website — Parmanand College of Fire Engineering & Safety Management (https://pcfsm.org/).
 
-Dark, industrial design system — fire orange on near-black, huge Archivo typography, WebGL 3D, and scroll-driven storytelling. All content (programs, centers, placements, facilities, contact) is sourced from the existing pcfsm.org website.
+Dark-then-light industrial design system — fire orange accent, huge Geist typography, WebGL 3D, and scroll-driven storytelling. All content (programs, centers, placements, facilities, contact) is sourced from the existing pcfsm.org website.
 
 ## Stack
 

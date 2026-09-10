@@ -1,11 +1,19 @@
 import type { Metadata } from "next";
-import { Archivo, Inter } from "next/font/google";
+import { Geist, Instrument_Serif, Inter } from "next/font/google";
 import "./globals.css";
 import SmoothScroll from "@/components/SmoothScroll";
 
-const archivo = Archivo({
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-archivo",
+  variable: "--font-geist",
+  display: "swap",
+});
+
+const instrument = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  variable: "--font-instrument",
   display: "swap",
 });
 
@@ -31,7 +39,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${archivo.variable} ${inter.variable}`}>
+    <html lang="en" className={`${geist.variable} ${instrument.variable} ${inter.variable}`}>
       <body className="bg-ink text-bone font-sans antialiased">
         <SmoothScroll>{children}</SmoothScroll>
       </body>
