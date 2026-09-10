@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -57,12 +58,23 @@ export default function SafetyWorld() {
           <h2 className="display mt-6 text-[11vw] leading-[0.95] text-bone md:text-[5.6vw]">
             ENTER THE WORLD OF SAFETY.
           </h2>
-          <div className="mt-16 grid gap-px overflow-hidden border border-white/8 bg-white/8 md:grid-cols-2">
+          <div className="mt-16 grid gap-px overflow-hidden border border-black/10 bg-black/8 md:grid-cols-2">
             {CHAPTERS.map((c) => (
-              <div key={c.index} className="bg-coal p-8 md:p-10">
-                <p className="text-sm tabular text-fire">{c.index}</p>
-                <h3 className="display mt-4 text-3xl text-bone md:text-4xl">{c.title}</h3>
-                <p className="mt-4 max-w-md text-sm leading-relaxed text-smoke">{c.body}</p>
+              <div key={c.index} className="group bg-coal">
+                <div className="relative aspect-[16/9] overflow-hidden">
+                  <Image
+                    src={c.image}
+                    alt={c.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="cine object-cover img-zoom"
+                  />
+                </div>
+                <div className="p-8 md:p-10">
+                  <p className="text-sm tabular text-fire">{c.index}</p>
+                  <h3 className="display mt-4 text-3xl text-bone md:text-4xl">{c.title}</h3>
+                  <p className="mt-4 max-w-md text-sm leading-relaxed text-smoke">{c.body}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -132,8 +144,8 @@ export default function SafetyWorld() {
                 {c.title}
               </span>
               <span
-                className={`block h-px transition-all duration-500 ease-out-expo ${
-                  i === chapter ? "w-10 bg-fire" : "w-5 bg-white/20"
+                className={`block h-px w-10 origin-right transition-[transform,background-color] duration-500 ease-out-expo ${
+                  i === chapter ? "scale-x-100 bg-fire" : "scale-x-50 bg-black/20"
                 }`}
               />
             </div>
