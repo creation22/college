@@ -3,7 +3,8 @@
 import * as THREE from "three";
 import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Lightformer, Sparkles } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer } from "@react-three/drei";
+import Motes from "@/three/Motes";
 
 /* ---------------------------------- textures ---------------------------------- */
 
@@ -222,8 +223,8 @@ function Bokeh() {
     () =>
       Array.from({ length: 7 }, (_, i) => ({
         pos: [-3 + (i % 4) * 1.9, -1.2 + ((i * 7) % 5) * 0.8, -4 - (i % 3) * 1.4] as [number, number, number],
-        scale: 0.14 + (i % 3) * 0.1,
-        opacity: 0.16 + (i % 4) * 0.07,
+        scale: 0.16 + (i % 3) * 0.12,
+        opacity: 0.22 + (i % 4) * 0.08,
       })),
     []
   );
@@ -231,13 +232,7 @@ function Bokeh() {
     <group>
       {dots.map((d, i) => (
         <sprite key={i} position={d.pos} scale={d.scale}>
-          <spriteMaterial
-            map={tex}
-            transparent
-            opacity={d.opacity}
-            depthWrite={false}
-            blending={THREE.AdditiveBlending}
-          />
+          <spriteMaterial map={tex} transparent opacity={d.opacity} depthWrite={false} />
         </sprite>
       ))}
     </group>
@@ -267,10 +262,13 @@ export default function HeroScene({
   still = false,
   simple = false,
   active = true,
+  drift = true,
 }: {
   still?: boolean;
   simple?: boolean;
   active?: boolean;
+  /** false = fixed cinematic camera (used when the scene is embedded mid-page) */
+  drift?: boolean;
 }) {
   return (
     <Canvas
@@ -280,36 +278,36 @@ export default function HeroScene({
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
       style={{ pointerEvents: "none" }}
     >
-      <fog attach="fog" args={["#08080a", 7, 14]} />
+      <fog attach="fog" args={["#fdfdfb", 7, 14]} />
 
-      <ambientLight intensity={0.18} />
+      <ambientLight intensity={0.4} />
       <spotLight
         position={[4, 6, 4]}
         angle={0.5}
         penumbra={1}
-        intensity={simple ? 60 : 90}
+        intensity={simple ? 50 : 70}
         color="#fff3e8"
         castShadow={!simple}
       />
-      <pointLight position={[-3.2, 1.4, -2.4]} intensity={26} distance={9} color="#ff5a1f" />
-      <pointLight position={[3.4, -0.6, 2.2]} intensity={8} distance={8} color="#5d7093" />
+      <pointLight position={[-3.2, 1.4, -2.4]} intensity={16} distance={9} color="#ff5a1f" />
+      <pointLight position={[3.4, -0.6, 2.2]} intensity={5} distance={8} color="#4c4ba6" />
 
       <Environment resolution={64} frames={1}>
-        <color attach="background" args={["#050507"]} />
-        <Lightformer intensity={1.6} position={[0, 4, 2]} scale={[8, 4, 1]} color="#ffffff" />
+        <color attach="background" args={["#dcdad4"]} />
+        <Lightformer intensity={2.2} position={[0, 4, 2]} scale={[8, 4, 1]} color="#ffffff" />
         <Lightformer
-          intensity={3.4}
+          intensity={2.6}
           position={[-4, 1, -2]}
           rotation-y={Math.PI / 2}
           scale={[6, 2, 1]}
           color="#ff5a1f"
         />
         <Lightformer
-          intensity={0.9}
+          intensity={0.7}
           position={[4, 0, 1]}
           rotation-y={-Math.PI / 2}
           scale={[5, 2, 1]}
-          color="#7d8ba8"
+          color="#6f6dc4"
         />
       </Environment>
 
@@ -317,23 +315,24 @@ export default function HeroScene({
       <Bokeh />
       {!simple && <Smoke />}
 
-      <Sparkles
-        count={simple ? 60 : 150}
-        scale={[5.5, 4.5, 5.5]}
-        position={[0, 0.5, -0.5]}
-        size={2.2}
-        speed={still ? 0 : 0.32}
-        opacity={0.65}
-        color="#ff8a50"
+      <Motes
+        count={simple ? 50 : 120}
+        color="#ff5a1f"
+        size={0.055}
+        riseSpeed={still ? 0 : 0.24}
+        opacity={0.55}
+        area={[5, 4.2, 5]}
+        position={[0, 0.4, -0.4]}
       />
-      <Sparkles
-        count={simple ? 25 : 60}
-        scale={[7, 5, 7]}
-        position={[0, 0.5, -1]}
-        size={1.4}
-        speed={still ? 0 : 0.14}
+      <Motes
+        count={simple ? 20 : 50}
+        color="#908fd4"
+        size={0.035}
+        riseSpeed={still ? 0 : 0.05}
+        sway={0.15}
         opacity={0.3}
-        color="#9aa4b5"
+        area={[6.5, 4.6, 6.5]}
+        position={[0, 0.4, -0.8]}
       />
 
       <ContactShadows
@@ -344,7 +343,7 @@ export default function HeroScene({
         far={3.2}
         color="#000000"
       />
-      <CameraDrift still={still} />
+      <CameraDrift still={still || !drift} />
     </Canvas>
   );
 }

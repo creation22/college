@@ -1,11 +1,18 @@
 "use client";
 
 import * as THREE from "three";
-import { useMemo, useRef, type RefObject } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Grid, Sparkles } from "@react-three/drei";
+import { Suspense, useMemo, useRef, type RefObject } from "react";
+import { Canvas, useFrame, useLoader } from "@react-three/fiber";
+import { Grid } from "@react-three/drei";
+import Motes from "@/three/Motes";
+import { CHAPTERS } from "@/lib/data";
 
 const STATION_Z = [-4, -12, -20, -28, -36];
+const CHAPTER_IMAGES = CHAPTERS.map((c) => c.image);
+
+const PANEL_W = 2.3;
+const PANEL_H = 1.44;
+const PANEL_BASE_Y = 1.5;
 
 function seeded(seed: number) {
   let s = seed;
@@ -58,99 +65,52 @@ function Pipes({ simple }: { simple: boolean }) {
   );
 }
 
-function Crates({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.3, 0]} castShadow>
-        <boxGeometry args={[0.6, 0.6, 0.6]} />
-        <meshStandardMaterial color="#15151a" metalness={0.4} roughness={0.7} />
-      </mesh>
-      <mesh position={[0.66, 0.22, 0.15]} rotation={[0, 0.5, 0]} castShadow>
-        <boxGeometry args={[0.44, 0.44, 0.44]} />
-        <meshStandardMaterial color="#121217" metalness={0.4} roughness={0.7} />
-      </mesh>
-    </group>
-  );
-}
+/* ------------------------------- chapter panels ------------------------------- */
 
-function MiniExtinguisher({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.45, 0]} castShadow>
-        <capsuleGeometry args={[0.16, 0.55, 6, 16]} />
-        <meshStandardMaterial color="#17171b" metalness={0.9} roughness={0.3} />
-      </mesh>
-      <mesh position={[0, 0.42, 0]}>
-        <cylinderGeometry args={[0.165, 0.165, 0.16, 20, 1, true]} />
-        <meshStandardMaterial
-          color="#ff5a1f"
-          emissive="#ff5a1f"
-          emissiveIntensity={0.7}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh position={[0, 0.82, 0]}>
-        <cylinderGeometry args={[0.04, 0.06, 0.1, 12]} />
-        <meshStandardMaterial color="#c9cdd4" metalness={1} roughness={0.25} />
-      </mesh>
-    </group>
-  );
-}
-
-function Helmet({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.34, 0]} scale={[1, 0.72, 1]} castShadow>
-        <sphereGeometry args={[0.32, 24, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="#c2341f" metalness={0.25} roughness={0.32} />
-      </mesh>
-      <mesh position={[0, 0.32, 0]} rotation={[Math.PI / 2, 0, 0]} castShadow>
-        <torusGeometry args={[0.33, 0.045, 10, 32]} />
-        <meshStandardMaterial color="#a62a18" metalness={0.25} roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 0.3, 0.28]}>
-        <boxGeometry args={[0.3, 0.12, 0.03]} />
-        <meshStandardMaterial
-          color="#ffb38a"
-          emissive="#ff8a50"
-          emissiveIntensity={0.5}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function WarningSign({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.8, 0]}>
-        <cylinderGeometry args={[0.03, 0.03, 1.6, 8]} />
-        <meshStandardMaterial color="#2a2a30" metalness={0.8} roughness={0.4} />
-      </mesh>
-      <mesh position={[0, 1.5, 0]}>
-        <boxGeometry args={[0.62, 0.62, 0.04]} />
-        <meshStandardMaterial
-          color="#ff5a1f"
-          emissive="#ff5a1f"
-          emissiveIntensity={0.9}
-          metalness={0.3}
-          roughness={0.4}
-        />
-      </mesh>
-      <mesh position={[0, 1.5, 0.026]}>
-        <boxGeometry args={[0.46, 0.46, 0.01]} />
-        <meshStandardMaterial color="#0a0a0c" emissive="#3d1205" emissiveIntensity={0.6} />
-      </mesh>
-    </group>
-  );
-}
-
-function Station({ z, kind }: { z: number; kind: number }) {
+function Station({ z, texture }: { z: number; texture: THREE.Texture }) {
   const x = -0.8;
+  const panel = useRef<THREE.Group>(null);
+
+  // sRGB + cover-fit onto the uniform panel ratio — work on a local clone
+  const map = useMemo(() => {
+    const t = texture.clone();
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    t.needsUpdate = true;
+    const img = t.image as { width: number; height: number };
+    const planeAspect = PANEL_W / PANEL_H;
+    const texAspect = img.width / img.height;
+    if (texAspect > planeAspect) {
+      const r = planeAspect / texAspect;
+      t.repeat.set(r, 1);
+      t.offset.set((1 - r) / 2, 0);
+    } else {
+      const r = texAspect / planeAspect;
+      t.repeat.set(1, r);
+      t.offset.set(0, (1 - r) / 2);
+    }
+    return t;
+  }, [texture]);
+
+  const worldTarget = useRef(new THREE.Vector3());
+
+  useFrame(({ camera, clock }) => {
+    if (!panel.current) return;
+    const t = clock.elapsedTime;
+    // gentle float — the image feels physically present, not a flat texture
+    panel.current.position.y = PANEL_BASE_Y + Math.sin(t * 0.5 + z * 0.3) * 0.045;
+    // billboard: every panel faces the camera, whatever its position on the path
+    panel.current.getWorldPosition(worldTarget.current);
+    panel.current.lookAt(camera.position);
+    // subtle sway layered on top of the billboard orientation
+    panel.current.rotation.y += Math.sin(t * 0.3 + z) * 0.02;
+    panel.current.rotation.z += Math.sin(t * 0.4 + z * 0.7) * 0.008;
+  });
+
   return (
     <group position={[x, 0, z]}>
       {/* floor plate */}
-      <mesh position={[0, 0.02, 0]} receiveShadow>
+      <mesh position={[0, 0.02, 0]}>
         <boxGeometry args={[2.6, 0.04, 2.6]} />
         <meshStandardMaterial color="#101014" metalness={0.5} roughness={0.6} />
       </mesh>
@@ -168,34 +128,43 @@ function Station({ z, kind }: { z: number; kind: number }) {
       <mesh position={[0, 1.8, 0]}>
         <cylinderGeometry args={[0.3, 0.55, 3.6, 20, 1, true]} />
         <meshBasicMaterial
-          color="#ff5a1f"
+          color="#ff7a3d"
           transparent
-          opacity={0.05}
+          opacity={0.08}
           side={THREE.DoubleSide}
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
         />
       </mesh>
       <pointLight position={[0, 1.6, 0.4]} intensity={14} distance={6.5} color="#ff5a1f" />
-      {kind === 0 && <MiniExtinguisher position={[0, 0.04, 0.1]} />}
-      {kind === 1 && <Crates position={[0.2, 0.04, 0]} />}
-      {kind === 2 && <Helmet position={[-0.15, 0.04, 0]} />}
-      {kind === 3 && <WarningSign position={[0.1, 0.04, 0]} />}
-      {kind === 4 && (
-        <group>
-          {[-0.7, 0, 0.7].map((px) => (
-            <mesh key={px} position={[px, 1, 0]}>
-              <boxGeometry args={[0.08, 2, 0.08]} />
-              <meshStandardMaterial color="#232329" metalness={0.85} roughness={0.4} />
-            </mesh>
-          ))}
-          <mesh position={[0, 2.05, 0]}>
-            <boxGeometry args={[1.7, 0.1, 0.12]} />
-            <meshStandardMaterial color="#1c1c22" metalness={0.85} roughness={0.4} />
-          </mesh>
-        </group>
-      )}
+
+      {/* floating 3D image panel */}
+      <group ref={panel} position={[0, PANEL_BASE_Y, 0]}>
+        <mesh position={[0, 0, -0.03]}>
+          <planeGeometry args={[PANEL_W + 0.14, PANEL_H + 0.14]} />
+          <meshBasicMaterial color="#ff5a1f" toneMapped={false} />
+        </mesh>
+        <mesh position={[0, 0, -0.015]}>
+          <planeGeometry args={[PANEL_W + 0.08, PANEL_H + 0.08]} />
+          <meshBasicMaterial color="#101014" toneMapped={false} />
+        </mesh>
+        <mesh>
+          <planeGeometry args={[PANEL_W, PANEL_H]} />
+          <meshBasicMaterial map={map} toneMapped={false} />
+        </mesh>
+      </group>
     </group>
+  );
+}
+
+function ChapterPanels() {
+  const textures = useLoader(THREE.TextureLoader, CHAPTER_IMAGES);
+
+  return (
+    <>
+      {STATION_Z.map((z, i) => (
+        <Station key={z} z={z} texture={textures[i]} />
+      ))}
+    </>
   );
 }
 
@@ -205,12 +174,12 @@ function CameraRig({ progress, simple }: { progress: RefObject<number>; simple: 
   const { camCurve, lookCurve } = useMemo(() => {
     const camPts = [
       new THREE.Vector3(1.7, 1.25, 3.2),
-      ...STATION_Z.map((z) => new THREE.Vector3(1.7, 1.1, z + 2.3)),
-      new THREE.Vector3(1.5, 1.15, -38.5),
+      ...STATION_Z.map((z) => new THREE.Vector3(1.7, 1.35, z + 2.3)),
+      new THREE.Vector3(1.5, 1.3, -38.5),
     ];
     const lookPts = [
-      new THREE.Vector3(-0.8, 1.0, -4),
-      ...STATION_Z.map((z) => new THREE.Vector3(-0.8, 0.95, z)),
+      new THREE.Vector3(-0.8, 1.25, -4),
+      ...STATION_Z.map((z) => new THREE.Vector3(-0.8, 1.3, z)),
     ];
     return {
       camCurve: new THREE.CatmullRomCurve3(camPts, false, "catmullrom", 0.4),
@@ -258,49 +227,52 @@ export default function SafetyScene({
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
       style={{ pointerEvents: "none" }}
       onCreated={({ gl }) => {
-        gl.setClearColor("#08080a");
+        gl.setClearColor("#f4f3ee");
       }}
     >
-      <fog attach="fog" args={["#08080a", 4.5, 26]} />
-      <ambientLight intensity={0.22} />
-      <pointLight position={[3, 2.6, 2]} intensity={30} distance={12} color="#fff0e2" />
+      <fog attach="fog" args={["#f4f3ee", 4.5, 26]} />
+      <ambientLight intensity={0.45} />
+      <pointLight position={[3, 2.6, 2]} intensity={24} distance={12} color="#fff0e2" />
+      <pointLight position={[3.4, 2.2, -14]} intensity={10} distance={16} color="#3f3f95" />
 
       <Grid
         position={[0, 0, -16]}
         args={[70, 70]}
         cellSize={0.85}
         cellThickness={0.5}
-        cellColor="#191920"
+        cellColor="#d8d6d0"
         sectionSize={4.25}
         sectionThickness={1}
-        sectionColor="#b33c14"
+        sectionColor="#ff5a1f"
         fadeDistance={30}
         fadeStrength={1.4}
         infiniteGrid
       />
 
       <Pipes simple={simple} />
-      {STATION_Z.map((z, i) => (
-        <Station key={z} z={z} kind={i} />
-      ))}
+      <Suspense fallback={null}>
+        <ChapterPanels />
+      </Suspense>
 
-      <Sparkles
-        count={simple ? 40 : 90}
-        scale={[6, 3.6, 42]}
-        position={[0, 1.8, -16]}
-        size={1.6}
-        speed={0.18}
+      <Motes
+        count={simple ? 35 : 80}
+        color="#908fd4"
+        size={0.045}
+        riseSpeed={0.04}
+        sway={0.12}
         opacity={0.35}
-        color="#c7ccd6"
+        area={[6, 3.4, 40]}
+        position={[0, 1.8, -16]}
       />
-      <Sparkles
-        count={simple ? 26 : 55}
-        scale={[4, 2.6, 40]}
-        position={[-0.8, 1.2, -16]}
-        size={2}
-        speed={0.25}
-        opacity={0.5}
-        color="#ff8a50"
+      <Motes
+        count={simple ? 20 : 45}
+        color="#ff5a1f"
+        size={0.05}
+        riseSpeed={0.12}
+        sway={0.2}
+        opacity={0.4}
+        area={[3.5, 2.4, 38]}
+        position={[-0.8, 1.1, -16]}
       />
 
       <CameraRig progress={progress} simple={simple} />
