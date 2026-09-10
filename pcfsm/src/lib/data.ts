@@ -4,6 +4,7 @@ export const SITE = {
   tagline: "Fire Engineering & Industrial Safety Education",
   established: "1999",
   url: "https://pcfsm.org",
+  logo: "/images/logo.png",
   address:
     "Survey No. 434, 5th Floor, Landge Landmark, Kasarwadi, Nashik Phata, Near Sagar Plaza, Mumbai–Pune Highway, Pune 411034, Maharashtra, India",
   email: "info@pcfsm.org",
@@ -48,26 +49,31 @@ export const CHAPTERS = [
     index: "01",
     title: "Fire Fighting",
     body: "Live drills, hose lines and real fire-ground discipline. You don't read about fire — you face it, controlled and trained.",
+    image: "/images/world/fire-fighting.webp",
   },
   {
     index: "02",
     title: "Industrial Safety",
     body: "Hazard identification, risk assessment and plant safety systems for heavy industry and modern factories.",
+    image: "/images/world/industrial-safety.webp",
   },
   {
     index: "03",
     title: "Emergency Response",
     body: "Preparedness, evacuation planning and incident command — decisions made calmly, under pressure.",
+    image: "/images/world/emergency-response.webp",
   },
   {
     index: "04",
     title: "Disaster Management",
     body: "Understanding catastrophe at scale and coordinating response when everything is on the line.",
+    image: "/images/world/disaster-management.webp",
   },
   {
     index: "05",
     title: "HSE",
     body: "Health, Safety & Environment — the governing standard of every serious industrial operation worldwide.",
+    image: "/images/world/hse.webp",
   },
 ] as const;
 
@@ -244,38 +250,34 @@ export type Center = {
   type: "Head Office" | "Regional Office" | "Learning Center";
   address: string;
   programs: string;
-  maps?: string;
-  // normalized map coordinates (viewBox 440x380, Maharashtra simplified)
-  x: number;
-  y: number;
+  mapQuery: string;
 };
 
 export const CENTERS: Center[] = [
-  {
-    city: "Aurangabad",
-    type: "Head Office",
-    address: "Parmanand College of Fire Engineering & Safety Management, Chhatrapati Sambhaji Nagar, Maharashtra",
-    programs: "Full-time programs & administration",
-    x: 161,
-    y: 133,
-  },
   {
     city: "Pune",
     type: "Regional Office",
     address:
       "Survey No. 434, 5th Floor, Landge Landmark, Kasarwadi, Nashik Phata, Mumbai–Pune Highway, Pune 411034",
     programs: "Fire Engineering & Industrial Safety programs",
-    maps: "https://www.google.co.in/maps/place/Parmanand+College+of+Fire+Engineering+And+Safety+Management/@18.6060237,73.8212762,17z",
-    x: 78,
-    y: 202,
+    mapQuery:
+      "Parmanand College of Fire Engineering And Safety Management, Kasarwadi, Pune",
+  },
+  {
+    city: "Aurangabad",
+    type: "Head Office",
+    address: "Parmanand College of Fire Engineering & Safety Management, Chhatrapati Sambhaji Nagar, Maharashtra",
+    programs: "Full-time programs & administration",
+    mapQuery:
+      "Parmanand College of Fire Engineering & Safety Management, Chhatrapati Sambhaji Nagar, Aurangabad, Maharashtra",
   },
   {
     city: "Navi Mumbai — CBD Belapur",
     type: "Learning Center",
     address: "Parmanand College of Fire Engineering & Safety Management, CBD Belapur, Navi Mumbai",
     programs: "Fire Engineering & Industrial Safety programs",
-    x: 36,
-    y: 180,
+    mapQuery:
+      "Parmanand College of Fire Engineering & Safety Management, CBD Belapur, Navi Mumbai",
   },
   {
     city: "Thane",
@@ -283,8 +285,7 @@ export const CENTERS: Center[] = [
     address:
       "R.P Mangala High School, Opp. Bank of Maharashtra, Thane East, Mumbai 400603 — branch of PCFSM",
     programs: "Fire Engineering & Industrial Safety programs",
-    x: 33,
-    y: 169,
+    mapQuery: "R.P Mangala High School, Thane East, Mumbai 400603",
   },
   {
     city: "Borivali",
@@ -292,8 +293,7 @@ export const CENTERS: Center[] = [
     address:
       "Fifth Floor, Classroom 509, Sailee International School, MHB Colony, Near MHB Ground, Gorai, Borivali West, Mumbai 400066",
     programs: "Fire Engineering & Industrial Safety programs",
-    x: 25,
-    y: 161,
+    mapQuery: "Sailee International School, MHB Colony, Gorai, Borivali West, Mumbai 400066",
   },
   {
     city: "Ratnagiri",
@@ -301,8 +301,7 @@ export const CENTERS: Center[] = [
     address:
       "ND-51, Mirjole MIDC, 2 min from Bafna Motors, TRP Road, Ratnagiri 415639 — branch of PCFSM",
     programs: "Fire Engineering & Industrial Safety programs",
-    x: 50,
-    y: 292,
+    mapQuery: "ND-51, Mirjole MIDC, TRP Road, Ratnagiri 415639",
   },
 ];
 
