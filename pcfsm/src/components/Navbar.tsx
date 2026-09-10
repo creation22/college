@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "motion/react";
 import { NAV, SITE } from "@/lib/data";
 import { scrollToId } from "@/components/SmoothScroll";
@@ -12,13 +13,21 @@ function Logo() {
     <Link
       href="/"
       aria-label="PCFSM — home"
-      className="group flex items-baseline gap-2 select-none"
+      className="group flex items-center gap-3 select-none"
       onClick={(e) => {
         e.preventDefault();
         window.scrollTo({ top: 0, behavior: "smooth" });
       }}
     >
-      <span className="display text-2xl tracking-tight text-bone">
+      <Image
+        src={SITE.logo}
+        alt="PCFSM emblem"
+        width={36}
+        height={36}
+        priority
+        className="h-8 w-8 object-contain md:h-9 md:w-9"
+      />
+      <span className="display text-xl tracking-tight text-bone md:text-2xl">
         PCF<span className="text-fire">S</span>M
       </span>
       <span className="hidden sm:block text-[9px] uppercase tracking-[0.3em] text-smoke group-hover:text-ash transition-colors duration-300">
@@ -56,7 +65,7 @@ export default function Navbar() {
         transition={{ duration: 0.7, ease: [0.19, 1, 0.22, 1], delay: 0.2 }}
         className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-500 ${
           scrolled
-            ? "bg-ink/72 backdrop-blur-xl border-b border-white/8"
+            ? "bg-ink/72 backdrop-blur-xl border-b border-black/10"
             : "bg-transparent border-b border-transparent"
         }`}
       >
@@ -72,7 +81,7 @@ export default function Navbar() {
                   className="group relative text-[13px] uppercase tracking-[0.14em] text-ash hover:text-bone transition-colors duration-300"
                 >
                   {item.label}
-                  <span className="absolute -bottom-1.5 left-0 h-px w-0 bg-fire transition-all duration-400 ease-out-expo group-hover:w-full" />
+                  <span className="absolute -bottom-1.5 left-0 h-px w-full origin-left scale-x-0 bg-fire transition-transform duration-300 ease-out-expo group-hover:scale-x-100" />
                 </a>
               </li>
             ))}
@@ -84,7 +93,7 @@ export default function Navbar() {
                 href={SITE.applyUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 bg-fire px-5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.14em] text-ink transition-transform duration-150 ease-out active:scale-[0.97] hover:bg-ember"
+                className="group inline-flex items-center gap-2 bg-fire px-5 py-2.5 text-[12px] font-semibold uppercase tracking-[0.14em] text-ink transition-[background-color,transform] duration-150 ease-out active:scale-[0.97] hover:bg-ember"
               >
                 Apply Now
                 <span className="inline-block transition-transform duration-300 ease-out-expo group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden>
@@ -158,10 +167,22 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ delay: 0.5, duration: 0.4 }}
-              className="border-t border-white/8 px-8 py-6 text-sm text-smoke"
+              className="border-t border-black/10 px-8 py-6"
             >
-              <p>{SITE.email}</p>
-              <p className="mt-1">{SITE.phone}</p>
+              <div className="flex items-center gap-3">
+                <Image
+                  src={SITE.logo}
+                  alt="PCFSM emblem"
+                  width={28}
+                  height={28}
+                  className="h-7 w-7 object-contain"
+                />
+                <p className="text-[10px] uppercase tracking-[0.26em] text-smoke">
+                  {SITE.fullName}
+                </p>
+              </div>
+              <p className="mt-3 text-sm text-smoke">{SITE.email}</p>
+              <p className="mt-1 text-sm text-smoke">{SITE.phone}</p>
             </motion.div>
           </motion.div>
         )}
