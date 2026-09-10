@@ -116,7 +116,7 @@ function Panel({
           alt={t.title}
           fill
           sizes={big ? "34vw" : "78vw"}
-          className="cine object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.03]"
+          className="cine object-cover img-zoom"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/10 to-transparent" aria-hidden />
       </div>

@@ -35,7 +35,11 @@ export default function Programs() {
             {PROGRAMS.map((p, i) => {
               const isActive = active === i;
               return (
-                <Reveal key={p.index} delay={i * 0.05}>
+                <Reveal
+                  key={p.index}
+                  y={i === 0 ? 28 : 0}
+                  delay={i === 0 ? 0 : 0.08 + i * 0.05}
+                >
                   <a
                     href={p.href}
                     target="_blank"
@@ -43,15 +47,15 @@ export default function Programs() {
                     onMouseEnter={() => setActive(i)}
                     onFocus={() => setActive(i)}
                     onClick={() => setActive(i)}
-                    className={`group relative block border-t border-white/8 py-7 md:py-9 transition-colors duration-500 ${
+                    className={`group relative block border-t border-black/10 py-7 md:py-9 transition-colors duration-500 ${
                       i === PROGRAMS.length - 1 ? "border-b" : ""
                     }`}
                     aria-label={`${p.name} — ${p.duration} program`}
                   >
                     {/* hover accent line */}
                     <span
-                      className={`absolute left-0 top-[-1px] h-px bg-fire transition-all duration-600 ease-out-expo ${
-                        isActive ? "w-full" : "w-0"
+                      className={`absolute left-0 top-[-1px] h-px w-full origin-left bg-fire transition-transform duration-400 ease-out-expo ${
+                        isActive ? "scale-x-100" : "scale-x-0"
                       }`}
                       aria-hidden
                     />
@@ -65,7 +69,7 @@ export default function Programs() {
                       </span>
                       <div className="flex-1">
                         <h3
-                          className={`display text-[6.4vw] leading-[1.02] transition-all duration-600 ease-out-expo md:text-[2.6vw] ${
+                          className={`display text-[6.4vw] leading-[1.02] transition-[transform,color] duration-350 ease-out-expo md:text-[2.6vw] ${
                             isActive ? "translate-x-3 text-bone" : "text-bone/75"
                           }`}
                         >
@@ -79,7 +83,7 @@ export default function Programs() {
                           <span className="text-smoke">{p.eligibility}</span>
                         </div>
                         <p
-                          className={`mt-3 max-w-lg text-sm leading-relaxed transition-all duration-500 ease-out-expo ${
+                          className={`mt-3 max-w-lg text-sm leading-relaxed transition-[opacity,transform] duration-400 ease-out-expo ${
                             isActive ? "text-ash md:opacity-100 md:translate-y-0" : "text-smoke md:opacity-0 md:translate-y-1"
                           } md:max-h-12 md:overflow-hidden`}
                         >
@@ -87,7 +91,7 @@ export default function Programs() {
                         </p>
                       </div>
                       <span
-                        className={`hidden shrink-0 text-2xl transition-all duration-500 ease-out-expo md:block ${
+                        className={`hidden shrink-0 text-2xl transition-[transform,color] duration-300 ease-out-expo md:block ${
                           isActive ? "translate-x-1 -translate-y-1 text-fire" : "text-smoke"
                         }`}
                         aria-hidden
@@ -156,13 +160,13 @@ export default function Programs() {
         </div>
       </div>
 
-      {/* also offered — marquee */}
-      <div className="mt-20 border-y border-white/8 py-5 overflow-hidden" aria-label="Also offered at PCFSM">
+      {/* also offered — night marquee */}
+      <div className="mt-20 overflow-hidden border-y border-white/8 bg-night py-5" aria-label="Also offered at PCFSM">
         <div className="flex w-max animate-marquee gap-0 whitespace-nowrap will-change-transform">
           {[0, 1].map((copy) => (
             <div key={copy} className="flex items-center" aria-hidden={copy === 1}>
               {ALSO_OFFERED.map((item) => (
-                <span key={`${copy}-${item}`} className="flex items-center text-[12px] uppercase tracking-[0.22em] text-smoke">
+                <span key={`${copy}-${item}`} className="flex items-center text-[12px] uppercase tracking-[0.22em] text-mist">
                   <span className="px-6">{item}</span>
                   <span className="text-fire" aria-hidden>·</span>
                 </span>
