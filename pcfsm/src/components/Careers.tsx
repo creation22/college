@@ -27,7 +27,7 @@ export default function Careers() {
       </div>
 
       {/* roles — animated typography */}
-      <div className="mt-14 space-y-px border-y border-white/8 bg-white/8 py-px" aria-label="Career paths">
+      <div className="mt-14 space-y-px border-y border-black/10 bg-black/8 py-px" aria-label="Career paths">
         <div className="overflow-hidden bg-coal py-4">
           <div className="flex w-max animate-marquee whitespace-nowrap will-change-transform">
             {[0, 1].map((copy) => (
@@ -48,8 +48,8 @@ export default function Careers() {
               <div key={copy} className="flex items-center" aria-hidden={copy === 1}>
                 {CAREER_ROLES.slice(3).concat([CAREER_ROLES[0]]).map((r) => (
                   <span key={`${copy}-${r}`} className="display flex items-center px-8 text-[8vw] leading-none md:text-[3.6vw]">
-                    <span className="text-outline">{r}</span>
-                    <span className="ml-8 h-2 w-2 rounded-full bg-fire" aria-hidden />
+                    <span className="text-outline-indigo">{r}</span>
+                    <span className="ml-8 h-2 w-2 rounded-full bg-indigo" aria-hidden />
                   </span>
                 ))}
               </div>
@@ -59,7 +59,7 @@ export default function Careers() {
       </div>
 
       {/* verified facts */}
-      <div className="mx-auto mt-16 grid max-w-[1600px] gap-px overflow-hidden bg-white/8 px-0 md:grid-cols-3">
+      <div className="mx-auto mt-16 grid max-w-[1600px] gap-px overflow-hidden bg-black/8 px-0 md:grid-cols-3">
         <Reveal className="h-full">
           <div className="h-full bg-coal p-8 md:p-10">
             <p className="display text-5xl text-fire tabular md:text-6xl">80%+</p>
@@ -71,7 +71,7 @@ export default function Careers() {
         </Reveal>
         <Reveal delay={0.1} className="h-full">
           <div className="h-full bg-coal p-8 md:p-10">
-            <p className="display text-5xl text-bone md:text-6xl">GLOBAL</p>
+            <p className="display text-5xl text-indigo md:text-6xl">GLOBAL</p>
             <p className="mt-3 text-sm leading-relaxed text-ash">
               PCFSM students have served companies internationally as well as across India.
             </p>
@@ -99,7 +99,7 @@ export default function Careers() {
         </Reveal>
         <div className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-7">
           {PLACED.map((s, i) => (
-            <Reveal key={s.name} delay={(i % 7) * 0.06}>
+            <Reveal key={s.name} y={i < 2 ? 28 : 0} delay={i < 2 ? i * 0.08 : 0.12 + i * 0.04}>
               <div className="group">
                 <div className="relative aspect-square overflow-hidden hairline">
                   <Image
@@ -107,7 +107,7 @@ export default function Careers() {
                     alt={s.name}
                     fill
                     sizes="(max-width:640px) 50vw, (max-width:1024px) 33vw, 14vw"
-                    className="cine object-cover transition-transform duration-700 ease-out-expo group-hover:scale-[1.04]"
+                    className="cine object-cover img-zoom"
                   />
                 </div>
                 <p className="mt-3 text-[12px] font-medium leading-tight text-bone">{s.name}</p>

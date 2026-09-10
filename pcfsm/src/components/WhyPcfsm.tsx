@@ -28,16 +28,16 @@ export default function WhyPcfsm() {
 
         <div className="mt-16">
           {WHY.map((w, i) => (
-            <Reveal key={w.index} delay={i * 0.04}>
+            <Reveal key={w.index} y={i === 0 ? 24 : 0} delay={i === 0 ? 0 : 0.06 + i * 0.04}>
               <div
-                className={`group grid gap-4 border-t border-white/8 py-8 transition-colors duration-500 hover:bg-white/[0.02] md:grid-cols-[80px_1fr_1.2fr] md:gap-10 md:py-10 ${
+                className={`group grid gap-4 border-t border-black/10 py-8 transition-colors duration-500 hover:bg-black/[0.03] md:grid-cols-[80px_1fr_1.2fr] md:gap-10 md:py-10 ${
                   i === WHY.length - 1 ? "border-b" : ""
                 }`}
               >
                 <p className="text-sm tabular text-smoke transition-colors duration-400 group-hover:text-fire">
                   {w.index}
                 </p>
-                <h3 className="display text-[7vw] leading-[1.02] text-bone/85 transition-all duration-500 ease-out-expo group-hover:translate-x-2 group-hover:text-bone md:text-[2.2vw]">
+                <h3 className="display text-[7vw] leading-[1.02] text-bone/85 transition-[transform,color] duration-400 ease-out-expo group-hover:translate-x-2 group-hover:text-bone md:text-[2.2vw]">
                   {w.title}
                 </h3>
                 <p className="max-w-xl text-sm leading-relaxed text-smoke group-hover:text-ash transition-colors duration-500">

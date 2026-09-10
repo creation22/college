@@ -51,7 +51,7 @@ export default function Stories() {
           {STORIES.map((s) => (
             <article
               key={s.name}
-              className="w-[86vw] shrink-0 border-t border-white/10 pt-8 sm:w-[60vw] md:w-[42vw] lg:w-[34vw]"
+              className="w-[86vw] shrink-0 border-t border-black/10 pt-8 sm:w-[60vw] md:w-[42vw] lg:w-[34vw]"
             >
               <p className="text-2xl font-medium leading-snug text-bone md:text-[1.9rem]">
                 <span className="text-fire" aria-hidden>“</span>
